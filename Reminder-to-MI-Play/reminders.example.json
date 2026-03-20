@@ -1,0 +1,41 @@
+[
+  {
+    "id": "remind_standup",
+    "content": "团队站会时间到，请准时参加",
+    "schedule": {
+      "type": "workdays",
+      "time": "10:00"
+    },
+    "device": "客厅音箱",
+    "priority": "high",
+    "status": "active",
+    "created_at": "2026-03-19T10:30:00Z",
+    "last_broadcast": "2026-03-19T10:00:15Z"
+  },
+  {
+    "id": "remind_lunch",
+    "content": "午餐时间到了，记得去吃饭",
+    "schedule": {
+      "type": "daily",
+      "time": "12:00"
+    },
+    "device": "客厅音箱",
+    "priority": "normal",
+    "status": "active",
+    "created_at": "2026-03-19T11:00:00Z",
+    "last_broadcast": null
+  },
+  {
+    "id": "remind_deadline",
+    "content": "提交月度报告，不要忘记",
+    "schedule": {
+      "type": "once",
+      "time": "15:00"
+    },
+    "device": "卧室音箱",
+    "priority": "high",
+    "status": "active",
+    "created_at": "2026-03-19T08:00:00Z",
+    "last_broadcast": null
+  }
+]

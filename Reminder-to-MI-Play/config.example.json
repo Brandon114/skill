@@ -1,0 +1,37 @@
+{
+  "version": "1.0.0",
+  "mijia": {
+    "username": "your_xiaomi_account@email.com",
+    "server": "cn",
+    "primary_device": "客厅音箱",
+    "auth_time": "2026-03-19T10:30:00Z"
+  },
+  "devices": [
+    {
+      "name": "客厅音箱",
+      "device_id": "device_001",
+      "type": "speaker",
+      "model": "XiaoAi",
+      "enabled": true
+    },
+    {
+      "name": "卧室音箱",
+      "device_id": "device_002",
+      "type": "speaker",
+      "model": "XiaoAi Mini",
+      "enabled": true
+    },
+    {
+      "name": "厨房音箱",
+      "device_id": "device_003",
+      "type": "speaker",
+      "model": "XiaoAi",
+      "enabled": false
+    }
+  ],
+  "settings": {
+    "volume": 50,
+    "repeat_count": 2,
+    "repeat_interval": 2
+  }
+}
