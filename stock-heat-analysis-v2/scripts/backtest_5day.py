@@ -296,7 +296,7 @@ def main():
     # 用全部数据算今日预测
     all_factors = compute_factors(kline)
     today_pred = predict_from_row(all_factors[-1], kline)
-    print(f"  {'(今日)':>12} {'(明日05/08)':>12} {kline[-1]['close']:>8.2f} "
+    print(f"  {'(今日)':>12} {'(明日)':>12} {kline[-1]['close']:>8.2f} "
           f"{today_pred['direction']:<10} {today_pred['probability']*100:>4.0f}% "
           f"{today_pred['heat_score']:>+7.3f} {'(待验)':>8}  --")
     print(f"{'='*70}")
