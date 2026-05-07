@@ -202,6 +202,40 @@ def time_series_zscore(factor_rows: list):
 # 预测逻辑
 # ============================================================
 
+def detect_trend(kline: list, window: int = 10) -> tuple:
+    """
+    层面一优化：趋势强度识别器。
+    返回 (trend_state, trend_score)。
+    trend_state: bullish_strong / bullish_weak / neutral / bearish_weak / bearish_strong
+    trend_score: -2.0 ~ +2.0，绝对值越大趋势越强
+    """
+    if len(kline) < window + 1:
+        return "neutral", 0.0
+
+    closes = [r.get("close", 0) for r in kline[-window:]]
+    # 方法1：近window日平均涨跌幅
+    pcts = [r.get("pct_chg", 0) for r in kline[-window:]]
+    avg_pct = sum(pcts) / len(pcts)
+
+    # 方法2：线性回归斜率（简化：首尾差价率）
+    first_close = closes[0] if closes[0] > 1e-10 else 1.0
+    slope = (closes[-1] - closes[0]) / (window * first_close) * 100
+
+    # 综合trend_score（avg_pct单位约%，slope也约%，可直接加权）
+    trend_score = avg_pct * 0.6 + slope * 0.4
+
+    if trend_score > 0.4:
+        return "bullish_strong", round(trend_score, 4)
+    elif trend_score > 0.08:
+        return "bullish_weak", round(trend_score, 4)
+    elif trend_score < -0.4:
+        return "bearish_strong", round(trend_score, 4)
+    elif trend_score < -0.08:
+        return "bearish_weak", round(trend_score, 4)
+    else:
+        return "neutral", round(trend_score, 4)
+
+
 def _signal_direction(z: float) -> str:
     """Z值 → 方向信号"""
     if z > SIGNAL_HIGH:
@@ -227,6 +261,10 @@ def predict_tomorrow(factor_rows: list, kline: list) -> dict:
 
     last = factor_rows[-1]
     heat = last["heat_score"]
+
+    # === 层面一优化：趋势强度识别 ===
+    trend_state, trend_score = detect_trend(kline)
+    trend_override = False   # 初始化覆盖标志
 
     # 计算各因子信号分布
     bull_signals = 0
@@ -290,6 +328,29 @@ def predict_tomorrow(factor_rows: list, kline: list) -> dict:
     else:
         confidence = "低到中"
 
+    # === 层面一优化：趋势覆盖逻辑 ===
+    trend_override = False
+    if trend_state == "bullish_strong" and direction in ["下跌", "震荡偏空"]:
+        direction = "震荡偏多" if direction == "震荡偏空" else "上涨"
+        base_prob = min(0.70, 0.50 + abs(trend_score) * 0.10)
+        trend_override = True
+    elif trend_state == "bearish_strong" and direction in ["上涨", "震荡偏多"]:
+        direction = "震荡偏空" if direction == "震荡偏多" else "下跌"
+        base_prob = min(0.70, 0.50 + abs(trend_score) * 0.10)
+        trend_override = True
+    elif trend_state == "bullish_weak" and direction == "下跌":
+        direction = "震荡"
+        base_prob = 0.52
+    elif trend_state == "bearish_weak" and direction == "上涨":
+        direction = "震荡"
+        base_prob = 0.52
+
+    if trend_override:
+        confidence = "中低"
+
+    # 重新计算 final_prob（因 base_prob 可能被覆盖）
+    final_prob = round(max(0.50, min(0.85, base_prob + pos_adj + signal_adj)), 2)
+
     # 参考价位
     ref_price = kline[-1].get("close", 0)
     prev_close = kline[-2].get("close", ref_price) if len(kline) > 1 else ref_price
@@ -302,6 +363,8 @@ def predict_tomorrow(factor_rows: list, kline: list) -> dict:
         "probability": final_prob,
         "confidence": confidence,
         "heat_score": heat,
+        "trend_state": trend_state,
+        "trend_score": trend_score,
         "bull_signals": bull_signals,
         "bear_signals": bear_signals,
         "price_position_pct": round(price_pos * 100, 1),
@@ -309,6 +372,7 @@ def predict_tomorrow(factor_rows: list, kline: list) -> dict:
         "support": support,
         "resistance": resistance,
         "factor_details": factor_details,
+        "_trend_override": trend_override,
     }
 
 
@@ -476,6 +540,11 @@ def print_summary(code: str, kline: list, realtime: dict,
         print(f"  多头信号:{p['bull_signals']} / 空头信号:{p['bear_signals']} / "
               f"价格位置:{p['price_position_pct']:.0f}%")
         print(f"  支撑:{p['support']}  压力:{p['resistance']}  当前:{p['current_price']}")
+        # 趋势信息（层面一优化）
+        if p.get("_trend_override"):
+            print(f"  ⚡ 趋势覆盖生效：{p['trend_state']}(score={p['trend_score']:+.2f})")
+        elif p.get("trend_state") and p["trend_state"] != "neutral":
+            print(f"  趋势状态：{p['trend_state']}（score: {p['trend_score']:+.2f}）")
 
     # 近5日追踪
     if tracking:
