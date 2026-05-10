@@ -1,0 +1,73 @@
+# {{description}}
+# 自动生成的 CodeBuddy 命令模板
+# 生成时间: {{timestamp}}
+
+name: {{command_name}}
+description: {{description}}
+version: "1.0.0"
+author: Brandon
+
+# 触发模式
+pattern: |
+    {% for pattern in patterns %}
+    {{pattern}}|
+    {% endfor %}
+
+# 命令处理器
+handler:
+  type: script
+  script: |
+    #!/bin/bash
+    # 自动生成的脚本
+    set -e
+    
+    echo "🚀 执行命令: {{command_name}}"
+    echo ""
+    
+    # TODO: 在这里添加您的处理逻辑
+    {% for task in tasks %}
+    echo "📋 任务 {{loop.index}}: {{task}}"
+    # 添加您的命令
+    echo "  ✅ 完成"
+    echo ""
+    {% endfor %}
+    
+    echo "✅ 命令执行完成"
+  
+  # 输出格式
+  output:
+    format: markdown
+    template: |
+      ## {{command_name}} 执行结果
+      
+      {{stdout}}
+      
+      ### 详细信息
+      - 执行时间: {{timestamp}}
+      - 任务数量: {{tasks|length}}
+      - 状态: ✅ 成功
+
+# 参数定义（可选）
+args:
+  - name: verbose
+    type: boolean
+    description: 是否显示详细信息
+    default: false
+  
+  - name: input
+    type: string
+    description: 输入文件或参数
+    required: false
+
+# 示例
+examples:
+  {% for example in examples %}
+  - input: {{example.input}}
+    description: {{example.description}}
+  {% endfor %}
+
+# 错误处理
+error_handling:
+  on_error: warn
+  max_retries: 3
+  retry_delay: 1s

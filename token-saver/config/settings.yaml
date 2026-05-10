@@ -1,0 +1,108 @@
+# Token-Saver 配置文件
+# 作者: Brandon
+# 版本: 1.0.0
+
+token_saver:
+  # 输入优化
+  input_optimization: true
+  max_input_length: 500  # 字符
+  
+  # 上下文管理
+  auto_compact_suggestion: true
+  compact_threshold_rounds: 20
+  compact_threshold_tokens: 8000
+  
+  # 输出控制
+  default_output_mode: "auto"  # auto/short/normal/debug
+  code_output_mode: "direct"   # 代码默认直接输出
+  
+  # 文件读取优化
+  enable_file_cache: true
+  cache_expiry_rounds: 3
+  max_file_lines: 500  # 超过则建议片段读取
+  
+  # 重复检测
+  enable_repetition_detection: true
+  repetition_window: 3  # 检测最近 3 次操作
+  
+  # 模式检测与脚本生成
+  enable_pattern_detection: true
+  pattern_threshold: 3  # 重复 3 次以上触发脚本生成
+  auto_generate_scripts: false  # 是否自动生成脚本（无需询问）
+  script_types:
+    - bash
+    - python
+    - codebuddy_command
+  
+  # 可视化
+  show_token_dashboard: true
+  dashboard_frequency: 5  # 每 5 轮显示一次
+  
+  # 隐私保护
+  privacy:
+    remove_sensitive_info: true
+    sensitive_patterns:
+      - "password"
+      - "token"
+      - "api_key"
+      - "secret"
+      - "私钥"
+      - "密码"
+    # 不记录到日志
+    dont_log: true
+  
+  # 日志
+  logging:
+    level: "INFO"  # DEBUG, INFO, WARNING, ERROR
+    save_to_file: false
+    log_file: ".token-saver.log"
+
+# 任务类型到输出模式的映射
+task_mode_mapping:
+  code_debug: "detail"
+  file_read: "short"
+  concept_explain: "normal"
+  code_gen: "short"
+  data_analysis: "normal"
+  general: "normal"
+
+# 冗余表达模式（会被自动移除）
+redundant_patterns:
+  - "请帮我(详细)?地?"
+  - "能不能?"
+  - "我想要?"
+  - "我需要?"
+  - "可以(帮我)?"
+  - "一步一步(地)?"
+  - "详细地?"
+  - "仔细地?"
+  - "认真地?"
+
+# Token 估算参数
+token_estimation:
+  chinese_chars_per_token: 1.5
+  english_chars_per_token: 4
+  code_chars_per_token: 3
+  
+# 成本估算（美元 per 1K tokens）
+pricing:
+  gpt-4:
+    input: 0.03
+    output: 0.06
+  gpt-3.5:
+    input: 0.0015
+    output: 0.002
+  claude-3:
+    input: 0.015
+    output: 0.075
+
+# 脚本生成模板路径
+templates:
+  bash: "templates/bash_script.template"
+  python: "templates/python_script.template"
+  codebuddy_command: "templates/codebuddy_command.template"
+
+# 保存路径
+output:
+  scripts_dir: ".codebuddy/scripts/"
+  max_saved_scripts: 10
